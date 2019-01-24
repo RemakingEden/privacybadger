@@ -48,6 +48,9 @@
  */
 let trackerInfo;
 
+// cached chrome.i18n.getMessage() results
+const TRANSLATIONS = [];
+
 
 /**
  * Initializes the content script.
@@ -116,7 +119,7 @@ function _createReplacementButtonImageCallback(tracker, trackerElem, callback) {
 
   button.setAttribute(
     "title",
-    chrome.i18n.getMessage("social_tooltip_pb_has_replaced", tracker.name)
+    TRANSLATIONS.social_tooltip_pb_has_replaced.replace("XXX", tracker.name)
   );
 
   let styleAttrs = [
@@ -368,9 +371,10 @@ function replaceIndividualButton(tracker) {
 function getTrackerData(callback) {
   chrome.runtime.sendMessage({checkReplaceButton: true}, function(response) {
     if (response) {
-      var trackers = response.trackers;
-      var trackerButtonsToReplace = response.trackerButtonsToReplace;
-      callback(trackers, trackerButtonsToReplace);
+      for (const key in response.translations) {
+        TRANSLATIONS[key] = response.translations[key];
+      }
+      callback(response.trackers, response.trackerButtonsToReplace);
     }
   });
 }
